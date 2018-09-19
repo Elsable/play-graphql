@@ -15,29 +15,28 @@ type IBookDAO interface {
 	Remove(ctx context.Context, id uint) error
 	FilterByStatus(_ context.Context, status string) ([]Book, error)
 	FilterByIDs(_ context.Context, ids []uint) ([]Book, error)
+	Close()
 }
 
 var BookDAO IBookDAO = bookDAOHelper{} // just to check if interface is implemented correctly
-
 
 type bookDAOHelper struct {
 	baseDao
 }
 
 type Book struct {
-	ID               uint `bson:"_id,omitempty"`
-	Title            string        `bson:"title"`
-	ISBN             string        `bson:"isbn"`
-	PageCount        int           `bson:"pageCount"`
-	PublishedDate    time.Time     `bson:"publishedDate"`
-	ThumbnailURL     string        `bson:"thumbnailUrl"`
-	ShortDescription string        `bson:"shortDescription"`
-	LongDescription  string        `bson:"longDescription"`
-	Status           string        `bson:"status"`
-	Authors          []string      `bson:"authors"`
-	Categories       []string      `json:"categories"`
+	ID               uint      `bson:"_id,omitempty" json:"id"`
+	Title            string    `bson:"title" json:"title"`
+	ISBN             string    `bson:"isbn" json:"isbn"`
+	PageCount        int       `bson:"pageCount" json:"page_count"`
+	PublishedDate    time.Time `bson:"publishedDate" json:"published_date"`
+	ThumbnailURL     string    `bson:"thumbnailUrl" json:"thumbnail_url"`
+	ShortDescription string    `bson:"shortDescription" json:"short_description"`
+	LongDescription  string    `bson:"longDescription" json:"long_description"`
+	Status           string    `bson:"status" json:"status"`
+	Authors          []string  `bson:"authors" json:"authors"`
+	Categories       []string  `bson:"categories" json:"categories"`
 }
-
 
 func (b *Book) Save() error {
 	return BookDAO.Insert(context.Background(), *b)
@@ -55,9 +54,12 @@ func NewBookDAO(db *mgo.Database) IBookDAO {
 	return bookDAOHelper{baseDao{db.C("book")}}
 }
 
-
 func (dao bookDAOHelper) getCollection() *mgo.Collection {
 	return dao.baseDao.coll
+}
+
+func (dao bookDAOHelper) Close(){
+	dao.close()
 }
 
 func (dao bookDAOHelper) Find(_ context.Context, id uint) (*Book, error) {
@@ -110,8 +112,6 @@ func (dao bookDAOHelper) FilterByIDs(_ context.Context, ids []uint) ([]Book, err
 	defer clean()
 
 	books := make([]Book, 0)
-	err := c.Find(bson.M{"_id": ids}).All(&books)
+	err := c.Find(bson.M{"_id": bson.M{"$in":ids}}).All(&books)
 	return books, err
 }
-
-
