@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/globalsign/mgo"
-	"github.com/qiniu/log.v1"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,26 +14,25 @@ import (
 
 // init prepare all resource
 func init() {
+	log.SetFlags(log.Lshortfile)
 	s, err := mgo.Dial("localhost:27017")
 	if err != nil {
-		log.Error("could not dial mongodb: %v", err)
-		os.Exit(2)
+		log.Fatalf("could not dial mongodb: %v", err)
 	}
 	if err := s.Login(&mgo.Credential{Username: "root", Password: "123456", Source: "admin"}); err != nil {
-		log.Error("could not login mongodb: %v", err)
-		os.Exit(2)
+		log.Fatalf("could not login mongodb: %v", err)
 	}
 	db := s.DB("graphql")
 	model.InitBookDAO(db)
-	log.Infof("init mongodb resource ==> done!")
+	log.Printf("init mongodb resource ==> done!")
 	if err := gql.InitSchema(); err != nil {
-		log.Error("could not init graphql schema: %v", err)
-		os.Exit(2)
+		log.Fatalf("could not init graphql schema: %v", err)
 	}
-	log.Infof("init graphql schema ==> done!")
+	log.Printf("init graphql schema ==> done!")
 }
 
 func main() {
+	defer model.BookDAO.Close()
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	mux := http.NewServeMux()

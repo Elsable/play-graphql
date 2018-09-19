@@ -26,7 +26,7 @@ func TestBookDAO_Find(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not find: %v", err)
 	}
-	log.Println(book.Title)
+	log.Println(book.PublishedDate)
 }
 
 func TestBookDAO_FilterByStatus(t *testing.T) {
@@ -82,7 +82,7 @@ func TestBookDAO_FilterByIDs(t *testing.T) {
 	}
 	db := s.DB("graphql")
 	bookDAO := NewBookDAO(db)
-	books, err := bookDAO.FilterByIDs(ctx, []uint{0,})
+	books, err := bookDAO.FilterByIDs(ctx, []uint{1, 10})
 	if err != nil {
 		t.Fatalf("could not filter by status: %v", err)
 	}

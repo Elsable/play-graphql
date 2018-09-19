@@ -23,6 +23,7 @@ func executeQuery(query string) (*graphql.Result, error) {
 func GraphQLHandler(w http.ResponseWriter, r *http.Request) {
 	rlt, err := executeQuery(r.URL.Query().Get("query"))
 	if err != nil {
+		log.Printf("%v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	rJSON, _ := json.Marshal(rlt)

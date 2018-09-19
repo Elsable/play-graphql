@@ -13,3 +13,7 @@ func (dao *baseDao)ready() (*mgo.Collection, func()) {
 		s.Close()
 	}
 }
+
+func (dao *baseDao) close()  {
+	dao.coll.Database.Session.Close()
+}
